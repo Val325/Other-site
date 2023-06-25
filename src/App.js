@@ -1,23 +1,23 @@
-import logo from './logo.svg';
 import './App.css';
+import { useState } from 'react';
+import Form from './components/form.js'
 
 function App() {
+  const [isShowForm, setForm] = useState(false); 
+  
+  function handleClick() {
+    setForm(!isShowForm);
+  } 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+      <header>
+        React Forum
       </header>
+      <div className="Content">
+         <button className="ShowForm" onClick={handleClick}>Show form</button>
+          Rendering form {isShowForm ? 'yes' : 'no'}
+          {isShowForm ? <Form /> : 'no'}
+      </div>
     </div>
   );
 }

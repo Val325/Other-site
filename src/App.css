@@ -1,38 +1,64 @@
-.App {
+* {
+  padding:0px;
+  margin:0px;
+}
+div > .App {
+  margin: 0;
+  height: 100vh;
+  
+  display: flex; 
+  flex-direction: column; 
+}
+header {
+  padding: 15px;
+  flex-shrink: 0;
+  background-color: #05070b;
+  color:white;
+ 
+  border-bottom: 5px solid #15191e;
+}
+div > .Content {
+  background-color: #05070b;
+  flex-grow: 1;
+  color:white;
+  padding-left: 20px;
+}
+
+
+/* CSS */
+.ShowForm {
+  margin-top: 20px;
+  display: block;
+  margin-right: auto;
+  margin-left: auto; 
+  background-color: #4CAF50;
+  border: 1px solid #4CAF50;
+  border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, .1) 0 2px 4px 0;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  font-family: "Akzidenz Grotesk BQ Medium", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  outline: none;
+  outline: 0;
+  padding: 10px 25px;
   text-align: center;
+  transform: translateY(0);
+  transition: transform 150ms, box-shadow 150ms;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.ShowForm:hover {
+  box-shadow: rgba(0, 0, 0, .15) 0 3px 9px 0;
+  transform: translateY(-2px);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+@media (min-width: 768px) {
+  .ShowForm {
+    padding: 10px 30px;
   }
 }
