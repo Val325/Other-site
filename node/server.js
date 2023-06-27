@@ -24,6 +24,7 @@ app.get('/', function(req, res) {
       console.log("Data from Database: ", row.id + ": " + row.datatext);
 
       data_db[row.id] = row.datatext;
+      //data_db = [{id: row.id,text: row.datatext}]
       resolve(data_db); 
      });
   }).then(rows => {
