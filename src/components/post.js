@@ -1,14 +1,14 @@
 import '../App.css';
 import { useState } from 'react';
 
-export function Post({text}) {  
+export function Post({data}) {  
   return (
     <div className="Post">
 	<p>
-	  {text}
+	  {data}
 	</p> 
     </div>
   );
 }
 
-//export default Post;
+export default Post;

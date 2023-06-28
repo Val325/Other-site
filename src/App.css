@@ -24,7 +24,16 @@ div > .Content {
   padding-left: 20px;
 }
 
-
+.Post{
+  border: 5px solid #15191e;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 25px;
+}
+.Form {
+  margin-top: 20px;
+  text-align:center 
+}
 /* CSS */
 .ShowForm {
   margin-top: 20px;
