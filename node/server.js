@@ -4,13 +4,13 @@ const hostname = '127.0.0.1';
 const port = 8000;
 
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('mydb.db');
+const db = new sqlite3.Database('db.db');
 const express = require("express");
 const cors = require('cors')
 const app = express();
 const multer  = require('multer')
 //const upload = multer({ dest: 'uploads/' })
-
+const prefixLoad = "/home/projects/forumNodeJs/node/"
 
 app.use(cors({
     origin: '*'
@@ -24,22 +24,23 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/')
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9) + ".png"
     cb(null, file.fieldname + '-' + uniqueSuffix)
   }
 })
 
 const upload = multer({ storage: storage })
 
-app.get('/', function(req, res) {
+
+app.get('/api/posts', function(req, res) {
   let data_db = {};
   
    // Query data from the table
    let dataProm = new Promise((resolve, reject) => {
-   db.each("SELECT id, datatext FROM TextTables", function(err, row) {
+   db.each("SELECT id, datatext, imageurl FROM TextTables", function(err, row) {
       console.log("Data from Database: ", row.id + ": " + row.datatext);
-
-      data_db[row.id] = row.datatext;
+      console.log("All data from DB: ", row)
+      data_db[row.id] = {text: row.datatext, url_image: prefixLoad + row.imageurl};
       //data_db = [{id: row.id,text: row.datatext}]
       resolve(data_db); 
      });
@@ -54,13 +55,14 @@ app.get('/', function(req, res) {
 app.post('/',upload.single('image'), function(request, response){
     console.log("From frontend: ", request.body.text);
     console.log("Image from frontend: ", request.file, request.body);
+    console.log("Path: ", request.file.path);
 
     db.serialize(function() {
     // Create a table
-    db.run("CREATE TABLE IF NOT EXISTS TextTables (id INTEGER PRIMARY KEY, datatext TEXT)");
+    db.run("CREATE TABLE IF NOT EXISTS TextTables (id INTEGER PRIMARY KEY, datatext TEXT, imageurl TEXT)");
 
-    // Insert data into the table
-    db.run("INSERT INTO TextTables (datatext) VALUES (?)", request.body.text);
+    // Insert text and image into the table
+    db.run("INSERT INTO TextTables (datatext, imageurl) VALUES (?,?)", request.body.text, request.file.path)
 
     
    });
