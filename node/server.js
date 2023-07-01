@@ -10,7 +10,8 @@ const cors = require('cors')
 const app = express();
 const multer  = require('multer')
 //const upload = multer({ dest: 'uploads/' })
-const prefixLoad = "/home/projects/forumNodeJs/node/"
+// /home/projects/forumNodeJs/react/forum/src
+const prefixLoad = "/home/projects/forumNodeJs/react/forum/src"
 
 app.use(cors({
     origin: '*'
@@ -21,7 +22,7 @@ app.use(express.json());
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/')
+    cb(null, prefixLoad + '/uploads/')
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9) + ".png"
@@ -40,8 +41,7 @@ app.get('/api/posts', function(req, res) {
    db.each("SELECT id, datatext, imageurl FROM TextTables", function(err, row) {
       console.log("Data from Database: ", row.id + ": " + row.datatext);
       console.log("All data from DB: ", row)
-      data_db[row.id] = {text: row.datatext, url_image: prefixLoad + row.imageurl};
-      //data_db = [{id: row.id,text: row.datatext}]
+      data_db[row.id] = {id: row.id, text: row.datatext, url_image: row.imageurl};
       resolve(data_db); 
      });
   }).then(rows => {
@@ -62,7 +62,7 @@ app.post('/',upload.single('image'), function(request, response){
     db.run("CREATE TABLE IF NOT EXISTS TextTables (id INTEGER PRIMARY KEY, datatext TEXT, imageurl TEXT)");
 
     // Insert text and image into the table
-    db.run("INSERT INTO TextTables (datatext, imageurl) VALUES (?,?)", request.body.text, request.file.path)
+    db.run("INSERT INTO TextTables (datatext, imageurl) VALUES (?,?)", request.body.text, request.file.filename)
 
     
    });
