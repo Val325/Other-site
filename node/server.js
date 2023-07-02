@@ -55,17 +55,32 @@ app.get('/api/posts', function(req, res) {
 app.post('/',upload.single('image'), function(request, response){
     console.log("From frontend: ", request.body.text);
     console.log("Image from frontend: ", request.file, request.body);
-    console.log("Path: ", request.file.path);
 
-    db.serialize(function() {
-    // Create a table
-    db.run("CREATE TABLE IF NOT EXISTS TextTables (id INTEGER PRIMARY KEY, datatext TEXT, imageurl TEXT)");
 
-    // Insert text and image into the table
-    db.run("INSERT INTO TextTables (datatext, imageurl) VALUES (?,?)", request.body.text, request.file.filename)
+    if (request.file === undefined){
+       db.serialize(function() {
+       // Create a table
+       db.run("CREATE TABLE IF NOT EXISTS TextTables (id INTEGER PRIMARY KEY, datatext TEXT, imageurl TEXT)");
+
+       // Insert text and image into the table
+       db.run("INSERT INTO TextTables (datatext, imageurl) VALUES (?,?)", request.body.text, null);
+       });
+    }else {
+       console.log("Path: ", request.file.path);
+       
+       db.serialize(function() {
+       // Create a table
+       db.run("CREATE TABLE IF NOT EXISTS TextTables (id INTEGER PRIMARY KEY, datatext TEXT, imageurl TEXT)");
+
+       // Insert text and image into the table
+       db.run("INSERT INTO TextTables (datatext, imageurl) VALUES (?,?)", request.body.text, request.file.filename);
+       });
+
+    }
 
     
-   });
+    
+
    //db.close(); 
 })
 
