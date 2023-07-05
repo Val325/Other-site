@@ -32,7 +32,39 @@ div > .Content {
 }
 .Form {
   margin-top: 20px;
-  text-align:center 
+  text-align:center; 
+}
+.AlignFile {
+  padding-left: 50px;
+  display: none;
+}
+.custom-file-upload {
+  height: 40px;
+  width: 140px;
+
+  margin-top: 20px;
+  display: block;
+  margin-right: auto;
+  margin-left: auto; 
+  background-color: #f44336;
+  border: 1px solid #f44336;
+  border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, .1) 0 2px 4px 0;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  font-family: "Akzidenz Grotesk BQ Medium", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  outline: none;
+  outline: 0;
+  padding: 10px 25px;
+  text-align: center;
+  transform: translateY(0);
+  transition: transform 150ms, box-shadow 150ms;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
 }
 /* CSS */
 .ShowForm {
@@ -60,8 +92,48 @@ div > .Content {
   -webkit-user-select: none;
   touch-action: manipulation;
 }
+.DelLink:link {
+  text-decoration: none;
+}
 
-.ShowForm:hover {
+.DelLink:visited {
+  text-decoration: none;
+}
+
+.DelLink:hover {
+  text-decoration: none;
+}
+
+.DelLink:active {
+  text-decoration: none;
+}
+.ShowPost {
+  margin-top: 20px;
+  display: block;
+  /*margin-right: auto;
+  margin-left: auto; */
+  background-color: #4CAF50;
+  border: 1px solid #4CAF50;
+  border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, .1) 0 2px 4px 0;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  font-family: "Akzidenz Grotesk BQ Medium", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  outline: none;
+  outline: 0;
+  padding: 10px 25px;
+  text-align: center;
+  transform: translateY(0);
+  transition: transform 150ms, box-shadow 150ms;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.ShowForm:hover, .custom-file-upload:hover {
   box-shadow: rgba(0, 0, 0, .15) 0 3px 9px 0;
   transform: translateY(-2px);
 }

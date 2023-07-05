@@ -2,7 +2,7 @@ import './App.css';
 import { useEffect,  useState } from 'react';
 import Form from './components/form.js'
 import Post from './components/post.js'
-
+import { Link } from "react-router-dom";
 function App() {
   const [isShowForm, setForm] = useState(false); 
   const [posts, setPosts] = useState({});
@@ -10,9 +10,8 @@ function App() {
   function handleClick() {
     setForm(!isShowForm);
   }
-  
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/")
+    fetch("http://127.0.0.1:8000/api/posts")
       .then(res => res.json())
       .then(
         (result) => {
@@ -37,7 +36,15 @@ function App() {
           {Object.entries(posts).map(([key, value]) => {
             return (
               <div className="Post">
-                id:{key} | {value}
+                id:{key} | {value.text} <br />
+		{ value.url_image &&
+		<a href={require("./uploads/" + String(value.url_image))}>
+		<img src={require("./uploads/" + String(value.url_image))} width="200" height="200" />
+		</a>
+		}
+		    <Link className="DelLink" to={"/post/" + String(value.id)}>
+		       <input type="button" className="ShowPost" value="Show post" />
+		    </Link>
               </div>
             );
           })}

@@ -31,7 +31,8 @@ function Form() {
       <form method="post" action="http://127.0.0.1:8000/" encType="multipart/form-data"> 
         <label for="textPost">Text</label><br />
         <input type="text" onChange={e => setMsg(e.target.value)} value={msg} /><br /><br />
-	<input type="file" name="image" onChange={e => setImage(e.target.files[0])} /><br />
+	<label class="custom-file-upload">
+	<input type="file" className="AlignFile" name="image" onChange={e => setImage(e.target.files[0])} />Upload file</label><br />
 	<input type="button" className="ShowForm" value="Send" onClick={handleSubmit} />
       </form>
       
