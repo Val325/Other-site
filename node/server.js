@@ -48,6 +48,26 @@ app.get('/api/posts', function(req, res) {
       console.log(rows)
       res.status(200).send(rows); 
   })
+})
+
+app.get('/api/posts/:postId', function(req, res) {
+  let data_db = {};
+  
+   // Query data from the table
+   let dataProm = new Promise((resolve, reject) => {
+   db.each("SELECT id, numPost, datatext, imageurl FROM Subposts", function(err, row) {
+      if (row === undefined){
+	return;
+      }
+      console.log("Data from Database: ", row.id + ": " + row.datatext + ": " + row.numPost);
+      console.log("All data from DB: ", row)
+      data_db[row.id] = {id: row.id, text: row.datatext, url_image: row.imageurl};
+      resolve(data_db); 
+     });
+  }).then(rows => {
+      console.log(rows)
+      res.status(200).send(rows); 
+  })
 
 
 
@@ -74,6 +94,39 @@ app.post('/',upload.single('image'), function(request, response){
 
        // Insert text and image into the table
        db.run("INSERT INTO TextTables (datatext, imageurl) VALUES (?,?)", request.body.text, request.file.filename);
+       });
+
+    }
+
+    
+    
+
+   //db.close(); 
+})
+
+
+app.post('/post/:postId',upload.single('image'), function(request, response){
+    console.log("From frontend: ", request.body.text);
+    console.log("Image from frontend: ", request.file, request.body);
+    console.log("ID: ", request.params["postId"])
+
+    if (request.file === undefined){
+       db.serialize(function() {
+       // Create a table
+       db.run("CREATE TABLE IF NOT EXISTS Subposts (id INTEGER PRIMARY KEY, numPost INTEGER, datatext TEXT, imageurl TEXT)");
+
+       // Insert text and image into the table
+       db.run("INSERT INTO Subposts (numPost, datatext, imageurl) VALUES (?,?,?)",request.params["postId"] ,request.body.text, null);
+       });
+    }else {
+       console.log("Path: ", request.file.path);
+       
+       db.serialize(function() {
+       // Create a table
+       db.run("CREATE TABLE IF NOT EXISTS Subposts (id INTEGER PRIMARY KEY, numPost INTEGER, datatext TEXT, imageurl TEXT)");
+
+       // Insert text and image into the table
+       db.run("INSERT INTO Subposts (numPost, datatext, imageurl) VALUES (?,?,?)",request.params["postId"],request.body.text, request.file.filename);
        });
 
     }
