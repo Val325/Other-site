@@ -51,21 +51,20 @@ app.get('/api/posts', function(req, res) {
 })
 
 app.get('/api/posts/:postId', function(req, res) {
-  let data_db = {};
+  let data_db = [];
   
    // Query data from the table
    let dataProm = new Promise((resolve, reject) => {
-   db.each("SELECT id, numPost, datatext, imageurl FROM Subposts", function(err, row) {
-      if (row === undefined){
-	return;
-      }
+   db.each("SELECT id, numPost, datatext, imageurl FROM Subposts WHERE numPost = ?", req.params["postId"], function(err, row) {
+      
+      
       console.log("Data from Database: ", row.id + ": " + row.datatext + ": " + row.numPost);
       console.log("All data from DB: ", row)
-      data_db[row.id] = {id: row.id, text: row.datatext, url_image: row.imageurl};
+      data_db[row.id] = {id: row.id, id_post: row.numPost, text: row.datatext, url_image: row.imageurl};
       resolve(data_db); 
      });
   }).then(rows => {
-      console.log(rows)
+      console.log("Promise: ", rows)
       res.status(200).send(rows); 
   })
 
