@@ -136,6 +136,17 @@ app.post('/post/:postId',upload.single('image'), function(request, response){
    //db.close(); 
 })
 
+app.post('/registration',function(request, response){
+    console.log("From frontend: ", request.body.text);
+    console.log("2 from frontend: ", request.file, request.body);
+    
+
+    
+    
+
+
+})
+
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
