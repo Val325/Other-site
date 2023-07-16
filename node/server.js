@@ -11,8 +11,10 @@ const app = express();
 const multer  = require('multer')
 //const upload = multer({ dest: 'uploads/' })
 // /home/projects/forumNodeJs/react/forum/src
-const prefixLoad = "/home/projects/forumNodeJs/react/forum/src"
-
+//const prefixLoad = "/home/projects/forumNodeJs/react/forum/src"
+const prefixLoad = "../react/forum/src"
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 app.use(cors({
     origin: '*'
 }));
@@ -137,13 +139,44 @@ app.post('/post/:postId',upload.single('image'), function(request, response){
 })
 
 app.post('/registration',function(request, response){
-    console.log("From frontend: ", request.body.text);
-    console.log("2 from frontend: ", request.file, request.body);
-    
+    console.log("Registration: ", request.body);
+    console.log("----------------------");
+    console.log("login: ", request.body.login);
+    console.log("password: ", request.body.Password);
+    console.log("----------------------");
 
-    
-    
+    db.serialize(function() {
+       // Create a table
+       db.run("CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY, login TEXT, password TEXT)");
+       bcrypt.hash(request.body.Password, saltRounds, function(err, hash) {
+            // Insert text and image into the table
+            db.run("INSERT INTO Users (login, password) VALUES (?,?)", request.body.login, hash);
+       })
+    });
+})
 
+app.post('/login',function(request, response){
+    console.log("Login: ", request.body);
+    console.log("----------------------");
+    console.log("login: ", request.body.login);
+    console.log("password: ", request.body.Password);
+    console.log("----------------------");
+
+    // Query data from the table
+   
+   db.each("SELECT id, login, password FROM Users WHERE login = ?", request.body.login, function(err, row) {
+      
+    console.log("Data: ", row);
+    console.log("HashPass: ", row.password);
+    console.log("PlainPass: ", request.body.Password);
+   //console.log("Data from Database: ", row.id + ": " + row.login + ": " + row.Password);
+    bcrypt.compare(request.body.Password, row.password, function(err, result) {
+        if (result){
+            console.log("You auth!"); 
+        }else{
+            console.log("You not auth!");
+        }})
+   })
 
 })
 
