@@ -1,5 +1,6 @@
 const http = require('http');
-
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
 const hostname = '127.0.0.1';
 const port = 8000;
 
@@ -9,29 +10,43 @@ const express = require("express");
 const cors = require('cors')
 const app = express();
 const multer  = require('multer')
+const cookie = require('js-cookie')
 //const upload = multer({ dest: 'uploads/' })
 // /home/projects/forumNodeJs/react/forum/src
 //const prefixLoad = "/home/projects/forumNodeJs/react/forum/src"
 const prefixLoad = "../react/forum/src"
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const session = require("express-session");
-const cookieParser = require("cookie-parser");
-app.use(cookieParser()); 
-app.use(session({
-    resave: false,
-    saveUninitialized: true,
-    secret: "6661edd990d17ce27223c326d6bb3e18",
-}));
-
-
-app.use(cors({
-    origin: '*'
-}));
-let isAuth = false;
-
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+const timeCookie = 1000 * 60 * 60 * 24;
+app.use(cors({
+    origin: true, //included origin as true
+    credentials: true, //included credentials as true
+}));
+app.use(cookieParser());
+
+app.use(session({
+    secret: "6661edd990d17ce27223c326d6bb3e18",
+    name: 'user',
+    resave: false,
+    saveUninitialized: false,
+}));
+let isAuth = {};
+var hour = 3600000 * 24;
+
+app.use(function(req, res, next) {
+    /*
+    res.header('Access-Control-Allow-Credentials', true);
+    res.header('Access-Control-Allow-Origin', "http://localhost:3000");
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+    */
+    req.session.user = isAuth; 
+    next();
+});
+
+
 
 
 const storage = multer.diskStorage({
@@ -59,10 +74,11 @@ function isAuthentification(auth, path){
 }
 
 
-app.get('/api/posts', function(req, res) {
-  let data_db = {};
-   isAuthentification(isAuth, "/api/posts") 
-   console.log("session: ", req.session.auth);
+
+app.get('/api/posts', function(request, response) {
+   console.log("session: ", request.session.user); 
+    let data_db = {};
+   //isAuthentification(isAuth, "/api/posts") 
    // Query data from the table
    let dataProm = new Promise((resolve, reject) => {
    db.each("SELECT id, datatext, imageurl FROM TextTables", function(err, row) {
@@ -73,17 +89,18 @@ app.get('/api/posts', function(req, res) {
      });
   }).then(rows => {
       console.log(rows)
-      res.status(200).send(rows); 
+      response.status(200).send(rows); 
   })
 })
 
-app.get('/api/posts/:postId', function(req, res) {
-  let data_db = [];
-    console.log("session: ", req.session.auth);
-    isAuthentification(isAuth, "/api/posts")
+app.get('/api/posts/:postId', function(request, response) {
+
+    let data_db = [];
+    console.log("session: ", request.session.user);
+    //isAuthentification(isAuth, "/api/posts")
    // Query data from the table
    let dataProm = new Promise((resolve, reject) => {
-   db.each("SELECT id, numPost, datatext, imageurl FROM Subposts WHERE numPost = ?", req.params["postId"], function(err, row) {
+   db.each("SELECT id, numPost, datatext, imageurl FROM Subposts WHERE numPost = ?", request.params["postId"], function(err, row) {
       
       
       //console.log("Data from Database: ", row.id + ": " + row.datatext + ": " + row.numPost);
@@ -93,16 +110,18 @@ app.get('/api/posts/:postId', function(req, res) {
      });
   }).then(rows => {
       console.log("Promise: ", rows)
-      res.status(200).send(rows); 
+      response.status(200).send(rows); 
   })
 
 
 
 })
 app.post('/',upload.single('image'), function(request, response){
+
     console.log("From frontend: ", request.body.text);
     console.log("Image from frontend: ", request.file, request.body);
-    console.log("session: ", request.session);
+    console.log("session: ", request.session.user);
+    console.log("cookie: ", document.cookie)
     isAuthentification(isAuth, "/api/posts")
     if (request.file === undefined){
        db.serialize(function() {
@@ -133,10 +152,11 @@ app.post('/',upload.single('image'), function(request, response){
 
 
 app.post('/post/:postId',upload.single('image'), function(request, response){
+
     console.log("From frontend: ", request.body.text);
     console.log("Image from frontend: ", request.file, request.body);
     console.log("ID: ", request.params["postId"])
-    console.log("session: ", request.session);
+    console.log("session: ", request.session.user);
     isAuthentification(isAuth, "/api/posts")
     if (request.file === undefined){
        db.serialize(function() {
@@ -166,11 +186,12 @@ app.post('/post/:postId',upload.single('image'), function(request, response){
 })
 
 app.post('/registration',function(request, response){
+
     console.log("Registration: ", request.body);
     console.log("----------------------");
     console.log("login: ", request.body.login);
     console.log("password: ", request.body.Password);
-    console.log("session: ", request.session.auth);
+    console.log("session: ", request.session.user);
     console.log("----------------------");
     isAuthentification(isAuth, "/api/posts")
     db.serialize(function() {
@@ -179,16 +200,20 @@ app.post('/registration',function(request, response){
        bcrypt.hash(request.body.Password, saltRounds, function(err, hash) {
             // Insert text and image into the table
             db.run("INSERT INTO Users (login, password) VALUES (?,?)", request.body.login, hash);
+            request.session.user = { name:request.body.login };
+            request.session.save();
        })
     });
 })
 
+
 app.post('/login',async function(request, response){
+
     console.log("Login: ", request.body);
     console.log("----------------------");
     console.log("login: ", request.body.login);
     console.log("password: ", request.body.Password);
-    console.log("session: ", request.session.auth);
+    console.log("session user: ", request.session);
     console.log("----------------------");
     // Query data from the table
    /*
@@ -214,7 +239,7 @@ app.post('/login',async function(request, response){
         db.get("SELECT id, login, password FROM Users WHERE login = ?", request.body.login, function(err, row) {
             if (err) {
                 reject(err);
-            } else {
+            } else {123
                 resolve(row);
             }
         });
@@ -225,20 +250,26 @@ app.post('/login',async function(request, response){
         const passwordMatch = await bcrypt.compare(request.body.Password, userData.password);
         if (passwordMatch) {
             console.log("You auth!");
-            request.session.auth = true;
+            request.session.cookie.expires = new Date(Date.now() + hour)
+            request.session.cookie.maxAge = hour
+            request.session.user = request.body.login;
+            //cookie.set('user', request.body.login , { expires: 7, domain: "localhost:3000" })
         } else {
             console.log("You not auth!");
-            request.session.auth = false;
         }
     } else {
         console.log("User not found!");
-        request.session.auth = false;
     }
-
-    console.log("Session: ",request.session.auth)
-    isAuth = request.session.auth; 
+    console.log("session /login: ", request.session)
+    isAuth = request.session;
+    response.json(request.session)
 })
-
+app.get("/cookie-data", function(request, response){
+    console.log("cookie data: ",request.session.user)
+    response.json({ 
+        user: request.session.user, 
+    });
+})
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
