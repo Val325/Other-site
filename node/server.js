@@ -1,48 +1,62 @@
 const http = require('http');
-const session = require("express-session");
-const cookieParser = require("cookie-parser");
-const hostname = '127.0.0.1';
-const port = 8000;
-
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('db.db');
 const express = require("express");
 const cors = require('cors')
 const app = express();
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+
+const hostname = '127.0.0.1';
+const port = 8000;
+app.use(cookieParser());
+const timeCookie = 1000 * 60 * 60 * 24 * 60;
+//app.use(cookieParser());
+
+app.use(session({
+    secret: "6661edd990d17ce27223c326d6bb3e18",
+    name: 'user',
+    resave: true,
+    saveUninitialized: true,
+    cookie: {
+        httpOnly: true, // Set httpOnly to false to allow access from client-side scripts
+        // Other cookie options like maxAge, secure, etc. can be set here as well.
+        secure: false,
+        maxAge: timeCookie,
+    }
+}))
+
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('db.db');
+
 const multer  = require('multer')
-const cookie = require('js-cookie')
+//const cookie = require('js-cookie')
 //const upload = multer({ dest: 'uploads/' })
 // /home/projects/forumNodeJs/react/forum/src
 //const prefixLoad = "/home/projects/forumNodeJs/react/forum/src"
 const prefixLoad = "../react/forum/src"
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+
+
+app.use(cors({
+    origin: 'http://localhost:3000', // Set the origin to allow requests from the frontend
+    credentials: true, // Included credentials as true
+}));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-const timeCookie = 1000 * 60 * 60 * 24;
-app.use(cors({
-    origin: true, //included origin as true
-    credentials: true, //included credentials as true
-}));
-app.use(cookieParser());
 
-app.use(session({
-    secret: "6661edd990d17ce27223c326d6bb3e18",
-    name: 'user',
-    resave: false,
-    saveUninitialized: false,
-}));
 let isAuth = {};
 var hour = 3600000 * 24;
 
 app.use(function(req, res, next) {
-    /*
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3000')
+    /* 
     res.header('Access-Control-Allow-Credentials', true);
-    res.header('Access-Control-Allow-Origin', "http://localhost:3000");
+    res.header('Access-Control-Allow-Origin', "*");
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
     */
-    req.session.user = isAuth; 
+    //req.session.user = isAuth; 
     next();
 });
 
@@ -72,11 +86,24 @@ function isAuthentification(auth, path){
         console.log("-----------------");
     }
 }
+function filterAllSessions(sessionsArray){
+    let userData;
 
-
+    for (let key in sessionsArray) {
+        //console.log("key: ",key, "value: ",sessionsArray[key]);
+        //console.log("user: ",JSON.parse(sessionsArray[key]));
+ 
+        if (JSON.parse(sessionsArray[key])["user"]){
+            console.log("user in login: ",JSON.parse(sessionsArray[key]))
+            return JSON.parse(sessionsArray[key])
+        } 
+    }
+}
 
 app.get('/api/posts', function(request, response) {
-   console.log("session: ", request.session.user); 
+    //request.session.destroy();
+   //console.log("session: ", request.sessionStore.sessions);
+    filterAllSessions(request.sessionStore.sessions) 
     let data_db = {};
    //isAuthentification(isAuth, "/api/posts") 
    // Query data from the table
@@ -96,7 +123,8 @@ app.get('/api/posts', function(request, response) {
 app.get('/api/posts/:postId', function(request, response) {
 
     let data_db = [];
-    console.log("session: ", request.session.user);
+    //console.log("session: ", request.session.user);
+
     //isAuthentification(isAuth, "/api/posts")
    // Query data from the table
    let dataProm = new Promise((resolve, reject) => {
@@ -120,8 +148,8 @@ app.post('/',upload.single('image'), function(request, response){
 
     console.log("From frontend: ", request.body.text);
     console.log("Image from frontend: ", request.file, request.body);
-    console.log("session: ", request.session.user);
-    console.log("cookie: ", document.cookie)
+    //console.log("session: ", request.session);
+    //console.log("cookie: ", request.cookies)
     isAuthentification(isAuth, "/api/posts")
     if (request.file === undefined){
        db.serialize(function() {
@@ -200,20 +228,20 @@ app.post('/registration',function(request, response){
        bcrypt.hash(request.body.Password, saltRounds, function(err, hash) {
             // Insert text and image into the table
             db.run("INSERT INTO Users (login, password) VALUES (?,?)", request.body.login, hash);
-            request.session.user = { name:request.body.login };
-            request.session.save();
+            //request.session.user = { name:request.body.login };
+            //request.session.save();
        })
     });
 })
 
 
 app.post('/login',async function(request, response){
-
+    //request.session.destroy(); 
     console.log("Login: ", request.body);
     console.log("----------------------");
     console.log("login: ", request.body.login);
     console.log("password: ", request.body.Password);
-    console.log("session user: ", request.session);
+    //console.log("session user: ", request.session);
     console.log("----------------------");
     // Query data from the table
    /*
@@ -233,6 +261,7 @@ app.post('/login',async function(request, response){
         }})
    })
 */
+    let auth = false;
 
     // Запрос данных пользователя из базы данных
     const userData = await new Promise((resolve, reject) => {
@@ -250,25 +279,30 @@ app.post('/login',async function(request, response){
         const passwordMatch = await bcrypt.compare(request.body.Password, userData.password);
         if (passwordMatch) {
             console.log("You auth!");
-            request.session.cookie.expires = new Date(Date.now() + hour)
-            request.session.cookie.maxAge = hour
-            request.session.user = request.body.login;
-            //cookie.set('user', request.body.login , { expires: 7, domain: "localhost:3000" })
+            
+            request.session.user = { user: request.body.login };
+            
         } else {
             console.log("You not auth!");
         }
     } else {
         console.log("User not found!");
     }
+
+
     console.log("session /login: ", request.session)
-    isAuth = request.session;
-    response.json(request.session)
+    //request.session.save();
+    response.send(request.session) 
+    //isAuth = request.session;
 })
-app.get("/cookie-data", function(request, response){
-    console.log("cookie data: ",request.session.user)
-    response.json({ 
-        user: request.session.user, 
-    });
+app.get("/login", function(request, response){ 
+    response.json(filterAllSessions(request.sessionStore.sessions));
+})
+
+app.get("/delete-cookie", function(request, response){
+   
+   request.session.destroy();
+   response.send("destroy session!");
 })
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
