@@ -295,7 +295,7 @@ app.post('/login',async function(request, response){
     response.send(request.session) 
     //isAuth = request.session;
 })
-app.get("/login", function(request, response){ 
+app.get("/session", function(request, response){ 
     response.json(filterAllSessions(request.sessionStore.sessions));
 })
 
