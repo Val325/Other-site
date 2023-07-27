@@ -14,8 +14,12 @@ header {
   flex-shrink: 0;
   background-color: #05070b;
   color:white;
- 
+  display: flex;
+  flex-direction: row;
   border-bottom: 5px solid #15191e;
+}
+header > .LinkMenu {
+  margin:10px; 
 }
 div > .Content {
   background-color: #05070b;
@@ -107,6 +111,12 @@ div > .Content {
 .DelLink:active {
   text-decoration: none;
 }
+a {
+  color: white;
+  text-decoration: none; /* no underline */
+}
+
+
 .ShowPost {
   margin-top: 20px;
   display: block;

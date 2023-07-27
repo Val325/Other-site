@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import OnePost from './components/onePagePost.js';
+import Registration from './components/registration.js'
+import Login from './components/login.js'
 import {
   createBrowserRouter,
   RouterProvider,
@@ -16,6 +18,14 @@ const router = createBrowserRouter([
   {
     path: "post/:postId",
     element: <OnePost />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/registration",
+    element: <Registration />,
   },
 ]);
 

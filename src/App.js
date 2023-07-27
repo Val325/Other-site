@@ -2,11 +2,12 @@ import './App.css';
 import { useEffect,  useState } from 'react';
 import Form from './components/form.js'
 import Post from './components/post.js'
+import Header from './components/header.js'
 import { Link } from "react-router-dom";
 function App() {
   const [isShowForm, setForm] = useState(false); 
   const [posts, setPosts] = useState({});
-
+  const [user, setUser] = useState('');
   function handleClick() {
     setForm(!isShowForm);
   }
@@ -15,20 +16,34 @@ function App() {
       .then(res => res.json())
       .then(
         (result) => {
-	  console.log("frontend: ", result)
+	      console.log("frontend: ", result)
+          
           setPosts(result) 
         },
         (error) => {
           console.log("catch a error!") 
         }
       )
+    fetch("http://127.0.0.1:8000/session")
+      .then(res => res.json())
+      .then(
+        (result) => {
+	      console.log("frontend: ", result)
+          
+          setUser(result.user.user) 
+        },
+        (error) => {
+          console.log("catch a error!") 
+        }
+      )
+
   }, [])
   
   return (
     <div className="App">
-      <header>
-        React Forum
-      </header>
+    <header>
+        <Header user={user} />
+    </header>
       <div className="Content">
          <button className="ShowForm" onClick={handleClick}>Show form</button>
           {isShowForm ? <Form /> : ''}
