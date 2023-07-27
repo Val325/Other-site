@@ -10,6 +10,8 @@ const port = 8000;
 app.use(cookieParser());
 const timeCookie = 1000 * 60 * 60 * 24 * 60;
 //app.use(cookieParser());
+const lengthPassword = 6;
+
 
 app.use(session({
     secret: "6661edd990d17ce27223c326d6bb3e18",
@@ -227,7 +229,9 @@ app.post('/registration',function(request, response){
        db.run("CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY, login TEXT, password TEXT)");
        bcrypt.hash(request.body.Password, saltRounds, function(err, hash) {
             // Insert text and image into the table
-            db.run("INSERT INTO Users (login, password) VALUES (?,?)", request.body.login, hash);
+            if (request.body.login.length > lengthPassword){ 
+                db.run("INSERT INTO Users (login, password) VALUES (?,?)", request.body.login, hash);
+            }
             //request.session.user = { name:request.body.login };
             //request.session.save();
        })
